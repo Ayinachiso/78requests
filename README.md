@@ -52,6 +52,63 @@ Typical workflow:
 5. Have the other frontend contributor review it. Resolve feedback, then merge the PR.
 6. Update local `main` and create a new branch for the next task.
 
+### Step-by-step terminal guide
+
+These Git commands are the same on macOS and Windows. On Windows, use Git Bash or the VS Code terminal with Git installed. The command to change folders can differ by terminal:
+
+```sh
+# macOS Terminal or Windows Git Bash (if the project is on your Desktop)
+cd ~/Desktop/78requests
+```
+
+```powershell
+# Windows PowerShell (if the project is on your Desktop)
+cd "$HOME\Desktop\78requests"
+```
+
+#### First time on a computer
+
+Clone the repository once, then install its dependencies:
+
+```sh
+git clone https://github.com/ayinachisonweze/78requests.git
+cd 78requests
+npm install
+```
+
+#### Start work on a page
+
+Before starting a new task, update your local `main` branch, then create a branch for the page or task. Choose a different branch name for each task:
+
+```sh
+git switch main
+git pull
+git switch -c feat/request-list-page
+```
+
+Replace `feat/request-list-page` with a clear task name, such as `feat/supplier-page`. Make your changes on that task branch.
+
+#### Save and share work
+
+When you are ready to save a snapshot and share your task branch:
+
+```sh
+git add .
+git commit -m "feat: add request list page"
+git push -u origin feat/request-list-page
+```
+
+Use a message that describes your change and use your actual branch name in the push command. The first push of a branch uses `-u`; later pushes to the same branch can use `git push`.
+
+Pushing a branch does not merge it into `main`. On GitHub, open a PR from your task branch into `main`, ask the other frontend contributor to review it, then merge it when it is ready. After the PR is merged, both contributors should update local `main` before starting the next task:
+
+```sh
+git switch main
+git pull
+```
+
+Do not work directly on `main`. If two people need to edit the same page at once, coordinate first to reduce conflicts. Working on different pages in separate task branches is easier to combine.
+
 Example commands (replace the branch name with your task):
 
 ```sh
