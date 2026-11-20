@@ -1,6 +1,6 @@
 # Procurement Workspace Frontend
 
-This repository contains the React frontend for a procurement tool. It is currently a starter environment; product screens and backend integration will be added as requirements are defined.
+This repository contains the React frontend for the 78 Requests procurement product. The current implementation is a Super Admin dashboard prototype; the employee, approver, finance, and authentication screens are still being developed.
 
 The product is intended to become a Progressive Web App (PWA), so users can install it from a supported browser and launch it from a home screen. PWA support has not been configured yet; this README records the intended direction.
 
@@ -140,9 +140,20 @@ src/
 │   ├── icons/              # SVG and other icon assets
 │   └── videos/             # Video assets imported by the app
 ├── components/             # Reusable UI components
-├── pages/                  # Page-level components
-└── styles/                 # Shared JavaScript style objects
+├── data/                   # Temporary sample content and navigation config
+├── pages/
+│   ├── superadmin_dashboard/ # Super Admin dashboard pages
+│   └── ...                  # Other page groups
+├── services/                # Shared API client and endpoint adapter
+└── styles/                  # Shared JavaScript style objects and responsive rules
+docs/
+└── backend-handoff.md       # Product-wide API and ASP.NET Core integration guide
+.env.example                 # Public API origin placeholder
 ```
+
+The Super Admin dashboard is split into five page components: `OverviewPage.jsx`, `UsersPage.jsx`, `RolesPage.jsx`, `AuditLogPage.jsx`, and `RequestsPage.jsx`, all inside `src/pages/superadmin_dashboard/`. Shared dashboard pieces such as the navigation shell, icons, cards, status badges, avatars, search field, and filter chips live in `src/components/`. The dashboard currently uses prototype sample data from `src/data/`; replace it with API data when the backend contract is ready. Sign-in and sign-up are outside this dashboard implementation.
+
+The dashboard includes a persisted light/dark theme switch, collapsible desktop navigation, and a dismissible first-visit guide that can be reopened from the help button. Its current data and action responses are explicitly marked as prototype content. Backend notes cover the full product, including screens that have not been built yet, C# DTO considerations, security rules, and outstanding PRD decisions in [`docs/backend-handoff.md`](docs/backend-handoff.md). The API request helper and Super Admin adapter are in `src/services/`; endpoint paths are left for the frontend and ASP.NET Core teams to agree through Swagger/OpenAPI.
 
 Vite's `index.html` at the repository root is the browser document that loads `src/main.jsx` and provides the `#root` element where React renders. App screens and UI are written in JSX.
 
@@ -175,10 +186,11 @@ The manifest, service worker, and platform icons are browser-facing assets/confi
 - Keep `public/` for files that need a fixed public URL and should be copied as-is, such as the favicon. The favicon can be referenced from `index.html` as `/favicon.svg`.
 - Use clear, descriptive component and file names so both contributors can find and reuse the same UI.
 
-## Current starter UI
+## Current prototype pieces
 
-- `src/pages/HomePage.jsx` is a placeholder landing page.
-- `src/components/Button.jsx` is a reusable button with `primary` and `secondary` variants.
-- `src/styles/componentStyles.js` and `src/styles/pageStyles.js` hold shared inline style objects.
+- `src/pages/superadmin_dashboard/` contains the five current dashboard views.
+- `src/components/` holds shared controls and the dashboard layout/tour.
+- `src/data/superAdminDemoData.js` contains mock records only; it is not an API cache or source of truth.
+- `src/services/` contains unconnected integration scaffolding. Do not wire production behavior until the backend publishes the reviewed OpenAPI contract.
 
-Replace the placeholder content as the procurement workflow and visual requirements are agreed.
+Employee, approver, Finance, authentication, notification, accessibility, and PWA features will be added as their requirements and API contracts are agreed.
