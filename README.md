@@ -1,4 +1,4 @@
-# Procurement Workspace Frontend
+﻿# Procurement Workspace Frontend
 
 This repository contains the React frontend for a procurement tool. It is currently a starter environment; product screens and backend integration will be added as requirements are defined.
 
@@ -30,6 +30,33 @@ npm run build    # Create a production build in dist/
 npm run preview  # Preview the production build locally
 npm run lint     # Run Oxlint
 ```
+
+## Authentication integration
+
+The authentication screens live in `src/pages/auth/`; API calls are isolated in `src/services/authApi.js`. Copy `.env.example` to `.env.local` and set `VITE_API_BASE_URL` plus any endpoint overrides for the backend environment.
+
+The app selects its auth flow by pathname in `src/App.jsx`:
+
+- `/` opens the existing admin sign-in flow. After authentication, `src/pages/AdminHomePage.jsx` renders the admin workspace. This is the page to extend or replace when connecting the admin dashboard UI.
+- `/employee` opens the employee invitation flow. After authentication, `src/pages/HomePage.jsx` renders the employee dashboard.
+
+Both flows use the shared password setup in `src/pages/auth/AccountSetup.jsx`. Auth screens are in `src/pages/auth/`; API requests and endpoint configuration are in `src/services/authApi.js` and `.env.example`.
+
+The frontend expects these backend routes by default:
+
+- `POST /api/auth/sign-in` with `{ "email", "password" }`. Return `{ "requiresAccountSetup": true, "setupToken": "â€¦" }` for first-time setup, `{ "requiresTwoStepVerification": true, "challengeToken": "â€¦" }` for an existing account that needs a code, or success for an authenticated session.
+- `POST /api/auth/set-password` with `{ "email", "temporaryPassword", "newPassword" }`. Return `{ "setupToken": "â€¦" }` for two-step enrollment.
+- `POST /api/auth/two-step/setup` with `{ "email", "setupToken" }`, returning `{ "qrCodeDataUrl", "secret", "setupToken" }` for authenticator enrollment.
+- `POST /api/auth/two-step/verify-setup` with `{ "email", "setupToken", "code" }` to confirm enrollment.
+- `POST /api/auth/two-step/skip` to complete an employee invitation when optional phone-code setup is deferred.
+- `POST /api/auth/two-step/verify` with `{ "email", "challengeToken", "code" }` to complete a returning userâ€™s sign-in challenge.
+- `POST /api/auth/password/forgot` with `{ "email" }` to request a password reset. Return the same generic success response whether or not the email exists.
+- `GET /api/auth/session` returning `{ "user": { "email" } }` for a valid session, or HTTP 401 when signed out.
+- `POST /api/auth/sign-out` to clear the session.
+
+Use secure HTTP-only session cookies for authenticated responses. The frontend sends requests with credentials enabled and does not store passwords or session tokens in local storage. Set the appropriate CORS and cookie settings when the API is served from a different origin. Endpoint path overrides are available for each auth endpoint in `.env.example`.
+
+For local interface preview only, `npm run dev` enables test authentication flows. These flows are disabled from production builds.
 
 ## Git and team workflow
 
@@ -131,17 +158,17 @@ Do not use a long-lived branch for each person or team: it makes integration and
 
 ```text
 public/
-└── favicon.svg            # Static favicon
+â””â”€â”€ favicon.svg            # Static favicon
 src/
-├── App.jsx                # Application-level component
-├── main.jsx               # React entry point
-├── assets/
-│   ├── images/             # Images imported by the app
-│   ├── icons/              # SVG and other icon assets
-│   └── videos/             # Video assets imported by the app
-├── components/             # Reusable UI components
-├── pages/                  # Page-level components
-└── styles/                 # Shared JavaScript style objects
+â”œâ”€â”€ App.jsx                # Application-level component
+â”œâ”€â”€ main.jsx               # React entry point
+â”œâ”€â”€ assets/
+â”‚   â”œâ”€â”€ images/             # Images imported by the app
+â”‚   â”œâ”€â”€ icons/              # SVG and other icon assets
+â”‚   â””â”€â”€ videos/             # Video assets imported by the app
+â”œâ”€â”€ components/             # Reusable UI components
+â”œâ”€â”€ pages/                  # Page-level components
+â””â”€â”€ styles/                 # Shared JavaScript style objects
 ```
 
 Vite's `index.html` at the repository root is the browser document that loads `src/main.jsx` and provides the `#root` element where React renders. App screens and UI are written in JSX.
