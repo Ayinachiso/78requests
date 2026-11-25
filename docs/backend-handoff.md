@@ -1,28 +1,30 @@
 # 78 Requests frontend and ASP.NET Core handoff
 
-This guide covers the complete 78 Requests product so the frontend and backend teams can agree on integration boundaries before implementing endpoints. The current React app contains a Super Admin dashboard prototype only. Sign-in/sign-up are being handled separately, and employee, approver, and Finance screens have not been built yet. Do not interpret a missing screen as a missing backend requirement.
+This guide covers the complete 78 Requests product so the frontend and backend teams can agree on integration boundaries before implementing endpoints. The React app now contains clickable screen prototypes across authentication, Super Admin, Employee, Approver, and Finance Officer. All visible records are demo fixtures and all mutations are local preview behavior. Do not treat a screen preview as a completed integration or interpret a missing API operation as a missing requirement.
 
 ## Current frontend status
 
 | Product area | Frontend status |
 | --- | --- |
-| Super Admin overview, users, roles/workflow, audit log, and requests | Prototype pages exist under `src/pages/superadmin_dashboard/`. They use sample records and local interactions. |
-| Authentication and invitation acceptance | Not included in this app build yet; frontend work is being handled separately. |
-| Employee request dashboard and request form | Not built yet. |
-| Approver queue and approve/reject/return screens | Not built yet. |
-| Finance payment, reconciliation, and refund screens | Not built yet. |
-| Notifications, accessibility controls, PWA installation/offline | Not integrated yet. |
+| Super Admin overview, users, roles/workflow, audit log, and requests | Prototype pages under `src/pages/superadmin_dashboard/`; sample records and placeholder mutations. |
+| Authentication flow | Sign-in, invitation setup, password rules, two-step verification, and password reset under `src/pages/auth/`; configurable adapter in `src/services/authApi.js`. Production behavior still requires the agreed backend contract. |
+| Employee procurement | Home, request list, three-step request form, request details, receipt upload preview, and updates under `src/pages/employee/`. |
+| Approval workflow | Approver home, approval queue, request review, decision confirmation, own requests, and updates under `src/pages/approver/`. |
+| Finance | Finance home, payments, payout review, result, breakdown, own requests, and updates under `src/pages/finance/`; no payment is sent. |
+| Notifications, accessibility controls, PWA installation/offline | Product requirements remain to be confirmed and integrated. Theme and responsive navigation are local UI preferences. |
 
-The dashboard displays a prototype notice so sample names, counts, states, and actions are not mistaken for live system data. Current action buttons that require server changes are placeholders. The feature tour's completion and sidebar/theme preferences are stored in this browser only; once auth exists, onboarding completion should be keyed to the authenticated user or stored as a backend preference if desired.
+The workspace displays a persistent prototype notice so sample names, counts, states, and actions are not mistaken for live system data. Approval, upload, and payout actions do not call the backend; the payout preview does not transfer funds. The feature tour's completion and sidebar/theme preferences are stored in this browser only; once auth exists, onboarding completion should be keyed to the authenticated user or stored as a backend preference if desired.
 
 ## Current integration files
 
 - `src/services/apiClient.js` is a shared JSON request helper. It reads the public API origin from `VITE_API_BASE_URL`, accepts caller-provided headers, and surfaces ASP.NET Core `ProblemDetails` messages.
 - `src/services/superAdminDashboardApi.js` is an unconnected Super Admin read adapter. It accepts confirmed route paths rather than inventing endpoint URLs.
+- `src/services/procurementWorkflowApi.js` is an unconnected route-configured adapter scaffold for authentication, requests, approvals, finance, notifications, and audit operations. Its operation names and HTTP verbs are starting points; confirm them against the published C# OpenAPI contract before wiring screens.
+- `src/services/authApi.js` implements configurable auth calls with `credentials: 'include'` and includes demo-only local flows when running Vite. The default auth paths and assumed response shapes are suggestions; confirm them with the ASP.NET Core team.
 - `src/data/superAdminDemoData.js` and `src/data/superAdminNavigation.js` contain prototype fixtures and navigation labels. Replace fixture imports with API-backed loading states once routes and response DTOs are agreed.
-- `.env.example` documents the `VITE_API_BASE_URL` setting. Values prefixed with `VITE_` are included in browser code and must never contain secrets.
+- `.env.example` documents the public API origin and auth endpoint path overrides. Values prefixed with `VITE_` are included in browser code and must never contain secrets.
 
-The API adapter is scaffolding only; it is not currently called by dashboard pages. No routes, auth transport, server DTOs, pagination rules, or mutation contracts have been agreed. Do not wire mock URLs or sample thresholds as if they were production API behavior.
+The dashboard adapters are scaffolding only and are not called by dashboard pages. Auth screens call their adapter, but its default paths and assumed response shapes are not yet an approved backend contract. Server DTOs, pagination rules, workflow mutations, and error shapes still need to be agreed. Do not treat prototype URLs or sample thresholds as production policy.
 
 ## Endpoint and screen inventory to agree
 
@@ -71,7 +73,7 @@ Use timezone-aware ISO 8601 timestamps. Agree whether monetary values are serial
 ## Error, authentication, and security agreement
 
 - Publish the ASP.NET Core OpenAPI specification as the source of truth for paths, verbs, request/response DTOs, and status codes.
-- Agree whether browser authentication uses secure cookies or bearer tokens before connecting the client. The request helper accepts headers, but currently has no token storage, cookie policy, refresh flow, or login behavior.
+- Confirm the auth adapter's HTTP-only cookie approach, cookie attributes, CORS policy, CSRF protection, session expiry, and refresh/sign-out behavior. Do not move production passwords or session tokens into browser storage.
 - Return clear validation errors and agree behavior for unauthorized, forbidden, conflict, rate-limit, and server errors. ASP.NET Core `ProblemDetails` is supported by the shared helper for JSON failures.
 - Keep secrets server-side. Never put database credentials, signing keys, privileged API tokens, or payment credentials in frontend environment variables.
 - Re-check permissions server-side for reads and writes; avoid returning sensitive fields outside the user's scope. Make state-changing operations safe against retries/double submission where appropriate.
@@ -79,9 +81,9 @@ Use timezone-aware ISO 8601 timestamps. Agree whether monetary values are serial
 
 ## Integration sequence
 
-1. Backend publishes a reviewed OpenAPI contract and example responses for auth, people/organization, requests/approvals, finance, notifications, and audit.
+1. Backend publishes a reviewed OpenAPI contract and example responses for auth, people/organization, requests/approvals, finance, notifications, and audit; confirm or replace the auth adapter's current defaults.
 2. Frontend and backend agree status wire values, DTO casing, amounts/currency, timestamps, pagination, validation/error behavior, and auth transport.
 3. Backend provides non-production API access and seeded test accounts/data for each role and scope.
 4. Frontend configures `VITE_API_BASE_URL`, maps only confirmed routes in `src/services/`, and replaces fixtures with loading, empty, error/retry, and success states.
-5. Implement the remaining role-specific screens against the same reviewed contract; do not assume all users can call every API because they share a dashboard shell.
+5. Connect each role preview to the same reviewed contract; do not assume all users can call every API because they share a dashboard shell.
 6. Verify role/scope restrictions and workflow transitions with direct API requests as well as the UI. Keep credentials, real financial transactions, and production user data out of mock fixtures.

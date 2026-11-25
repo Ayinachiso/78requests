@@ -1,6 +1,6 @@
 # Procurement Workspace Frontend
 
-This repository contains the React frontend for the 78 Requests procurement product. The current implementation is a Super Admin dashboard prototype; the employee, approver, finance, and authentication screens are still being developed.
+This repository contains the React frontend prototype for the 78 Requests procurement product. It includes role-based screen flows for Super Admin, Employee, Approver, and Finance Officer, plus invitation-based sign-in, first-time account setup, password creation, and two-step verification. Dashboard records and actions are still prototype data; authentication has a configurable API adapter and development-only demo flows.
 
 The product is intended to become a Progressive Web App (PWA), so users can install it from a supported browser and launch it from a home screen. PWA support has not been configured yet; this README records the intended direction.
 
@@ -142,8 +142,12 @@ src/
 ├── components/             # Reusable UI components
 ├── data/                   # Temporary sample content and navigation config
 ├── pages/
-│   ├── superadmin_dashboard/ # Super Admin dashboard pages
-│   └── ...                  # Other page groups
+│   ├── auth/                # Sign-in and invitation setup flow
+│   ├── superadmin_dashboard/ # Super Admin pages
+│   ├── employee/            # Employee dashboard and request flow
+│   ├── approver/            # Approval queue and decision flow
+│   ├── finance/             # Payment, payout, and reconciliation views
+│   └── shared/              # Page building blocks shared by role pages
 ├── services/                # Shared API client and endpoint adapter
 └── styles/                  # Shared JavaScript style objects and responsive rules
 docs/
@@ -151,9 +155,13 @@ docs/
 .env.example                 # Public API origin placeholder
 ```
 
-The Super Admin dashboard is split into five page components: `OverviewPage.jsx`, `UsersPage.jsx`, `RolesPage.jsx`, `AuditLogPage.jsx`, and `RequestsPage.jsx`, all inside `src/pages/superadmin_dashboard/`. Shared dashboard pieces such as the navigation shell, icons, cards, status badges, avatars, search field, and filter chips live in `src/components/`. The dashboard currently uses prototype sample data from `src/data/`; replace it with API data when the backend contract is ready. Sign-in and sign-up are outside this dashboard implementation.
+The screens are grouped by product phase/role under `src/pages/`. Reusable controls and the responsive workspace shell live in `src/components/`; cross-page role widgets live in `src/pages/shared/`. Choose a preview role from the “View as” menu in the desktop header. Role routes use hash URLs, for example `#/employee/make-request` and `#/finance/payments`. Authentication begins at `#/auth/sign-in`; invitation, password, and verification steps follow from the sign-in response.
 
-The dashboard includes a persisted light/dark theme switch, collapsible desktop navigation, and a dismissible first-visit guide that can be reopened from the help button. Its current data and action responses are explicitly marked as prototype content. Backend notes cover the full product, including screens that have not been built yet, C# DTO considerations, security rules, and outstanding PRD decisions in [`docs/backend-handoff.md`](docs/backend-handoff.md). The API request helper and Super Admin adapter are in `src/services/`; endpoint paths are left for the frontend and ASP.NET Core teams to agree through Swagger/OpenAPI.
+The workspace includes a persisted light/dark theme switch, collapsible desktop navigation, a first-visit Super Admin guide, mobile bottom navigation, and screen-level sample flows. A persistent prototype notice explains that dashboard values are not live and payment actions do not transfer funds. Backend notes cover the product-wide UI, C# DTO considerations, security rules, and outstanding PRD decisions in [`docs/backend-handoff.md`](docs/backend-handoff.md). Authentication requests are in `src/services/authApi.js`; dashboard integration scaffolds are also in `src/services/`. The auth paths in `.env.example` are defaults only and must be confirmed against the backend team's Swagger/OpenAPI contract.
+
+### Authentication preview
+
+The shared authentication flow lives in `src/pages/auth/`, with the API adapter at `src/services/authApi.js` and endpoint settings in `.env.example`. It supports invitation account setup, password rules, authenticator enrollment and sign-in verification, password reset requests, and sign-out. The backend should issue an HTTP-only session cookie; the frontend does not persist production passwords or tokens. `npm run dev` enables demo-only local flows; these are excluded from production builds. Demo names and behavior are sample content, not real credentials or working production accounts.
 
 Vite's `index.html` at the repository root is the browser document that loads `src/main.jsx` and provides the `#root` element where React renders. App screens and UI are written in JSX.
 
@@ -172,7 +180,7 @@ The manifest, service worker, and platform icons are browser-facing assets/confi
 
 - Put reusable interface elements, such as buttons, inputs, and navigation, in `src/components/`.
 - Put page-level compositions in `src/pages/` and render the active page from `src/App.jsx`.
-- Keep styles in JavaScript objects under `src/styles/`. Components and pages can import shared styles; we are not using a separate CSS file for each JSX file.
+- Keep dashboard styling in shared inline styles and JavaScript style objects under `src/styles/`. The authentication pages share one `src/styles/auth.css` stylesheet; do not create a separate stylesheet for each JSX page.
 - Store app images, icons, and videos under the corresponding `src/assets/` folders. Import them into JSX so Vite can include and process them in the build. For example:
 
   ```jsx
@@ -193,4 +201,4 @@ The manifest, service worker, and platform icons are browser-facing assets/confi
 - `src/data/superAdminDemoData.js` contains mock records only; it is not an API cache or source of truth.
 - `src/services/` contains unconnected integration scaffolding. Do not wire production behavior until the backend publishes the reviewed OpenAPI contract.
 
-Employee, approver, Finance, authentication, notification, accessibility, and PWA features will be added as their requirements and API contracts are agreed.
+The role screens are interaction prototypes. Before production, connect them to the reviewed API contract and replace every sample record with loading, empty, error/retry, and success states. Authentication, uploads, approvals, notifications, payouts, and audit data must use backend-authoritative flows described in the handoff guide.
