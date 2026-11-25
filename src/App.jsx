@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import ProcurementLayout from './components/ProcurementLayout.jsx'
-import DashboardTour from './components/DashboardTour.jsx'
+// The Super Admin tour is paused; its component and steps remain available for later.
 import { normalizeRoute, routeHash } from './data/productNavigation.js'
 import OverviewPage from './pages/superadmin_dashboard/OverviewPage.jsx'
 import UsersPage from './pages/superadmin_dashboard/UsersPage.jsx'
@@ -31,12 +31,7 @@ import AccountSetup from './pages/auth/AccountSetup.jsx'
 import TwoStepSetup from './pages/auth/TwoStepSetup.jsx'
 import TwoStepChallenge from './pages/auth/TwoStepChallenge.jsx'
 import { getSession, signOut } from './services/authApi.js'
-import { dashboardTourSteps } from './data/superAdminTour.js'
 import './styles/auth.css'
-
-function getTourDone() {
-  try { return window.localStorage.getItem('78requests-superadmin-tour-complete') === 'true' } catch { return true }
-}
 
 function productRole(role, email = '') {
   const normalized = String(role || '').toLowerCase().replace(/[^a-z]/g, '')
@@ -49,8 +44,6 @@ function productRole(role, email = '') {
 
 function App() {
   const [route, setRoute] = useState(() => normalizeRoute(window.location.hash || '#/auth/sign-in'))
-  const [tourOpen, setTourOpen] = useState(() => route.role === 'superadmin' && !getTourDone())
-  const [tourStepIndex, setTourStepIndex] = useState(0)
   const [message, setMessage] = useState('')
   const [authVariant, setAuthVariant] = useState(() => route.role === 'employee' ? 'employee' : 'admin')
   const [authTargetRole, setAuthTargetRole] = useState(() => route.role === 'auth' ? 'superadmin' : route.role)
@@ -94,22 +87,6 @@ function App() {
     return () => { active = false }
   }, [navigate, route.role])
 
-  const closeTour = useCallback(() => {
-    setTourOpen(false)
-    try { window.localStorage.setItem('78requests-superadmin-tour-complete', 'true') } catch { /* Tour remains dismissed for this session. */ }
-  }, [])
-  const openTour = useCallback(() => { setTourStepIndex(0); setTourOpen(true); navigate('superadmin', 'overview') }, [navigate])
-  const nextTour = () => {
-    const next = tourStepIndex + 1
-    if (next >= dashboardTourSteps.length) { closeTour(); navigate('superadmin', 'overview'); return }
-    setTourStepIndex(next)
-    navigate('superadmin', dashboardTourSteps[next].page)
-  }
-  const previousTour = () => {
-    const previous = Math.max(0, tourStepIndex - 1)
-    setTourStepIndex(previous)
-    navigate('superadmin', dashboardTourSteps[previous].page)
-  }
   const action = (label) => setMessage(`${label} is a prototype action. It will connect to the C# API when the backend endpoints are ready.`)
   const adminNavigate = (page) => navigate('superadmin', page)
 
@@ -117,7 +94,6 @@ function App() {
     const nextRole = productRole(role, email)
     setSignedInEmail(email)
     setAuthTargetRole(nextRole)
-    if (nextRole === 'superadmin' && !getTourDone()) { setTourStepIndex(0); setTourOpen(true) }
     setSetupAccount(null)
     setChallenge(null)
     setAuthStep('login')
@@ -204,9 +180,7 @@ function App() {
       onNavigate={navigate}
       onRoleChange={(role) => navigate(role, role === 'superadmin' ? 'overview' : 'home')}
       onOpenAuth={handleOpenAuth}
-      onOpenTour={openTour}
     >{content}</ProcurementLayout>
-    {tourOpen && route.role === 'superadmin' && <DashboardTour stepIndex={tourStepIndex} onNext={nextTour} onPrevious={previousTour} onSkip={closeTour} />}
     {message && <div role="status" aria-live="polite" style={{ position:'fixed', zIndex:30, right:16, bottom:'max(16px,env(safe-area-inset-bottom))', maxWidth:'min(420px,calc(100vw - 32px))', padding:'13px 16px', borderRadius:15, background:'#141414', color:'#fff', boxShadow:'0 18px 50px rgba(0,0,0,.22)', font:'500 12px/1.5 Inter,sans-serif' }}>{message}</div>}
   </>
 }

@@ -256,6 +256,8 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid 
 .skip-setup-button { width:100%; min-height:52px; margin-top:12px; border:1px solid #141414; border-radius:999px; background:#fff; color:#141414; cursor:pointer; font-size:15px; font-weight:600; }
 .skip-setup-button:disabled { cursor:wait; opacity:.65; }
 
+.mfa-form .setup-submit { margin-top:16px; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; scroll-behavior:auto !important; transition-duration:.01ms !important; }
 }

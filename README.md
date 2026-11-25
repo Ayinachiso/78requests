@@ -22,6 +22,10 @@ npm run dev
 
 Vite prints the local development URL in the terminal. The server supports hot updates while you edit files.
 
+### Connect to the local API
+
+The backend API runs at `http://localhost:8080` when started with Docker. After you have access to the backend repo, clone it and follow its “Run it with Docker” instructions. You need Docker Desktop and Git; you do not need to install .NET or PostgreSQL separately. Copy this frontend repo's `.env.example` to `.env.local` and keep `VITE_API_BASE_URL=http://localhost:8080`. In the backend repo's own `.env`, set `FRONTEND_ORIGIN` to the exact frontend origin Vite prints (for example `http://localhost:5173`). These settings belong in separate repositories. Restart Vite after changing `.env.local`, and never commit `.env` or `.env.local` files.
+
 ## Useful commands
 
 ```sh
